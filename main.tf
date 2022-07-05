@@ -131,7 +131,7 @@ module "aci_aaep" {
 
   for_each           = { for aaep in lookup(local.access_policies, "aaeps", []) : aaep.name => aaep if lookup(local.modules, "aci_aaep", true) }
   name               = "${each.value.name}${local.defaults.apic.access_policies.aaeps.name_suffix}"
-  infra_vlan         = lookup(local.access_policies, "infra_vlan", 0)
+  infra_vlan         = lookup(each.value, "infra_vlan", local.defaults.apic.access_policies.aaeps.infra_vlan) == true ? lookup(local.access_policies, "infra_vlan", 0) : 0
   physical_domains   = [for dom in lookup(each.value, "physical_domains", []) : "${dom}${local.defaults.apic.access_policies.physical_domains.name_suffix}"]
   routed_domains     = [for dom in lookup(each.value, "routed_domains", []) : "${dom}${local.defaults.apic.access_policies.routed_domains.name_suffix}"]
   vmware_vmm_domains = lookup(each.value, "vmware_vmm_domains", [])
