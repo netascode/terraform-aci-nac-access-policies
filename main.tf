@@ -135,6 +135,7 @@ module "aci_aaep" {
   physical_domains   = [for dom in lookup(each.value, "physical_domains", []) : "${dom}${local.defaults.apic.access_policies.physical_domains.name_suffix}"]
   routed_domains     = [for dom in lookup(each.value, "routed_domains", []) : "${dom}${local.defaults.apic.access_policies.routed_domains.name_suffix}"]
   vmware_vmm_domains = lookup(each.value, "vmware_vmm_domains", [])
+  endpoint_groups    = lookup(each.value, "endpoint_groups", [])
 
   depends_on = [
     module.aci_physical_domain,
