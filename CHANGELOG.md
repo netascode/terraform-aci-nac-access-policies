@@ -1,3 +1,7 @@
+## 0.1.3 (unreleased)
+
+- Add option to configure EPG mappings
+
 ## 0.1.2
 
 - Update readme and add link to Nexus-as-Code project documentation
