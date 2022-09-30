@@ -84,7 +84,7 @@ locals {
 
 module "aci_vlan_pool" {
   source  = "netascode/vlan-pool/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each   = { for vp in lookup(local.access_policies, "vlan_pools", []) : vp.name => vp if lookup(local.modules, "aci_vlan_pool", true) }
   name       = "${each.value.name}${local.defaults.apic.access_policies.vlan_pools.name_suffix}"
@@ -127,7 +127,7 @@ module "aci_routed_domain" {
 
 module "aci_aaep" {
   source  = "netascode/aaep/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each           = { for aaep in lookup(local.access_policies, "aaeps", []) : aaep.name => aaep if lookup(local.modules, "aci_aaep", true) }
   name               = "${each.value.name}${local.defaults.apic.access_policies.aaeps.name_suffix}"
@@ -145,7 +145,7 @@ module "aci_aaep" {
 
 module "aci_mst_policy" {
   source  = "netascode/mst-policy/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each = { for mst in lookup(lookup(local.access_policies, "switch_policies", {}), "mst_policies", []) : mst.name => mst if lookup(local.modules, "aci_mst_policy", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.mst_policies.name_suffix}"
@@ -194,7 +194,7 @@ module "aci_access_leaf_switch_policy_group" {
 
 module "aci_access_leaf_switch_profile_auto" {
   source  = "netascode/access-leaf-switch-profile/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_leaf_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_switch_profile_name", local.defaults.apic.access_policies.leaf_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -218,7 +218,7 @@ module "aci_access_leaf_switch_profile_auto" {
 
 module "aci_access_leaf_switch_profile_manual" {
   source  = "netascode/access-leaf-switch-profile/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each = { for prof in lookup(local.access_policies, "leaf_switch_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_leaf_switch_profile", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.leaf_switch_profiles.name_suffix}"
@@ -242,7 +242,7 @@ module "aci_access_leaf_switch_profile_manual" {
 
 module "aci_access_spine_switch_profile_auto" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_profile_name", local.defaults.apic.access_policies.spine_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -264,7 +264,7 @@ module "aci_access_spine_switch_profile_auto" {
 
 module "aci_access_spine_switch_profile_manual" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each = { for prof in lookup(local.access_policies, "spine_switch_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name     = each.value.name
@@ -461,7 +461,7 @@ module "aci_access_leaf_interface_profile_manual" {
 
 module "aci_access_leaf_interface_selector_manual" {
   source  = "netascode/access-leaf-interface-selector/aci"
-  version = ">= 0.1.1"
+  version = ">= 0.2.0"
 
   for_each              = { for selector in local.leaf_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_leaf_interface_selector", true) }
   interface_profile     = each.value.profile_name
@@ -490,7 +490,7 @@ module "aci_access_fex_interface_profile_manual" {
 
 module "aci_access_fex_interface_selector_manual" {
   source  = "netascode/access-fex-interface-selector/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each          = { for selector in local.fex_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_fex_interface_selector", true) }
   interface_profile = each.value.profile_name
@@ -523,7 +523,7 @@ module "aci_access_spine_interface_profile_manual" {
 
 module "aci_access_spine_interface_selector_manual" {
   source  = "netascode/access-spine-interface-selector/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   for_each          = { for selector in local.spine_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_spine_interface_selector", true) }
   interface_profile = each.value.profile_name
@@ -555,7 +555,7 @@ module "aci_mcp" {
 
 module "aci_qos" {
   source  = "netascode/qos/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.2.0"
 
   count        = lookup(local.modules, "aci_qos", true) == false ? 0 : 1
   preserve_cos = lookup(lookup(local.access_policies, "qos", {}), "preserve_cos", local.defaults.apic.access_policies.qos.preserve_cos)
