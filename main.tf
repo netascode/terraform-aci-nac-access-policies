@@ -555,7 +555,7 @@ module "aci_mcp" {
 
 module "aci_qos" {
   source  = "netascode/qos/aci"
-  version = ">= 0.2.0"
+  version = ">= 0.2.1"
 
   count        = lookup(local.modules, "aci_qos", true) == false ? 0 : 1
   preserve_cos = lookup(lookup(local.access_policies, "qos", {}), "preserve_cos", local.defaults.apic.access_policies.qos.preserve_cos)
@@ -567,6 +567,16 @@ module "aci_qos" {
       bandwidth_percent    = lookup(class, "bandwidth_percent", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.bandwidth_percent if qclass.level == class.level][0])
       scheduling           = lookup(class, "scheduling", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.scheduling if qclass.level == class.level][0])
       congestion_algorithm = lookup(class, "congestion_algorithm", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.congestion_algorithm if qclass.level == class.level][0])
+      minimum_buffer       = lookup(class, "minimum_buffer", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.minimum_buffer if qclass.level == class.level][0])
+      pfc_state            = lookup(class, "pfc_state", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.pfc_state if qclass.level == class.level][0])
+      no_drop_cos          = lookup(class, "no_drop_cos", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.no_drop_cos if qclass.level == class.level][0])
+      pfc_scope            = lookup(class, "pfc_scope", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.pfc_scope if qclass.level == class.level][0])
+      ecn                  = lookup(class, "ecn", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.ecn if qclass.level == class.level][0])
+      forward_non_ecn      = lookup(class, "forward_non_ecn", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.forward_non_ecn if qclass.level == class.level][0])
+      wred_max_threshold   = lookup(class, "wred_max_threshold", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.wred_max_threshold if qclass.level == class.level][0])
+      wred_min_threshold   = lookup(class, "wred_min_threshold", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.wred_min_threshold if qclass.level == class.level][0])
+      wred_probability     = lookup(class, "wred_probability", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.wred_probability if qclass.level == class.level][0])
+      weight               = lookup(class, "weight", [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.weight if qclass.level == class.level][0])
     }
   ]
 }
