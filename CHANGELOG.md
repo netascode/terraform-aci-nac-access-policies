@@ -1,6 +1,8 @@
 ## 0.2.2 (unreleased)
 
 - Add SPAN filter group module
+- Add SPAN destination group module
+- Add SPAN source group module
 
 ## 0.2.1
 
