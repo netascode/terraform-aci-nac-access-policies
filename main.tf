@@ -580,3 +580,24 @@ module "aci_qos" {
     }
   ]
 }
+
+module "aci_access_span_filter_group" {
+  source  = "netascode/access-span-filter-group/aci"
+  version = ">= 0.1.0"
+
+  for_each    = { for group in lookup(lookup(local.access_policies, "span", {}), "filter_groups", []) : group.name => group if lookup(local.modules, "aci_access_span_filter_group", true) }
+  name        = "${each.value.name}${local.defaults.apic.access_policies.span.filter_groups.name_suffix}"
+  description = lookup(each.value, "description", "")
+  entries = [for entry in lookup(each.value, "entries", []) : {
+    name                  = "${entry.name}${local.defaults.apic.access_policies.span.filter_groups.entries.name_suffix}"
+    description           = lookup(entry, "description", "")
+    source_ip             = entry.source_ip
+    destination_ip        = entry.destination_ip
+    ip_protocol           = lookup(entry, "ip_protocol", local.defaults.apic.access_policies.span.filter_groups.entries.ip_protocol)
+    source_port_from      = lookup(entry, "source_port_from", local.defaults.apic.access_policies.span.filter_groups.entries.source_port_from)
+    source_port_to        = lookup(entry, "source_port_to", local.defaults.apic.access_policies.span.filter_groups.entries.source_port_to)
+    destination_port_to   = lookup(entry, "destination_port_to", local.defaults.apic.access_policies.span.filter_groups.entries.destination_port_to)
+    destination_port_from = lookup(entry, "destination_port_from", local.defaults.apic.access_policies.span.filter_groups.entries.destination_port_from)
+  }]
+
+}
