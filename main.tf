@@ -724,9 +724,9 @@ module "aci_access_span_source_group" {
     vlan                = source.vlan
     access_paths = [for ap in lookup(source, "access_paths", []) : {
       node_id  = ap.node_id
-      node2_id = ap.node2_id == "vpc" ? [for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == ap.channel][0][1] : ap.node2_id
+      node2_id = ap.node2_id == "vpc" ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == ap.channel][0][1], null) : ap.node2_id
       fex_id   = ap.fex_id
-      fex2_id  = ap.fex2_id == "vpc" ? [for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == ap.channel][0][1] : ap.fex2_id
+      fex2_id  = ap.fex2_id == "vpc" ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == ap.channel][0][1], null) : ap.fex2_id
       pod_id   = ap.pod_id != null ? ap.pod_id : try([for node in lookup(local.node_policies, "nodes", []) : node.pod if node.id == ap.node_id][0], local.defaults.apic.node_policies.nodes.pod)
       port     = ap.port
       sub_port = ap.sub_port
