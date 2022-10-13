@@ -104,7 +104,7 @@ locals {
     name                = "${group.name}${local.defaults.apic.access_policies.span.destination_groups.name_suffix}"
     description         = lookup(group, "description", "")
     pod_id              = lookup(group, "pod_id", null)
-    node_id             = lookup(group, "node_id", lookup(group, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(group, "channel", null)][0][0], null) : null)
+    node_id             = lookup(group, "node_id", lookup(group, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(group, "channel", null)][0][0], 0) : 0)
     module              = lookup(group, "module", local.defaults.apic.access_policies.span.destination_groups.module)
     port                = lookup(group, "port", 0)
     sub_port            = lookup(group, "sub_port", 0)
