@@ -134,10 +134,10 @@ locals {
       name                = source.name
       direction           = lookup(source, "direction", local.defaults.apic.access_policies.span.source_groups.sources.direction)
       span_drop           = lookup(source, "span_drop", local.defaults.apic.access_policies.span.source_groups.sources.span_drop)
-      tenant              = lookup(source, "tenant", "")
-      application_profile = lookup(source, "application_profile", "")
-      endpoint_group      = lookup(source, "endpoint_group", "")
-      l3out               = lookup(source, "l3out", "")
+      tenant              = lookup(source, "tenant", null)
+      application_profile = lookup(source, "application_profile", null)
+      endpoint_group      = lookup(source, "endpoint_group", null)
+      l3out               = lookup(source, "l3out", null)
       vlan                = lookup(source, "vlan", null)
       access_paths = [for ap in lookup(source, "access_paths", []) : {
         node_id = lookup(ap, "node_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
