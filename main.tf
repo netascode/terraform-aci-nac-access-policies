@@ -583,7 +583,7 @@ module "aci_qos" {
 
 module "aci_access_span_filter_group" {
   source  = "netascode/access-span-filter-group/aci"
-  version = ">= 0.1.0"
+  version = ">= 0.1.1"
 
   for_each    = { for group in lookup(lookup(local.access_policies, "span", {}), "filter_groups", []) : group.name => group if lookup(local.modules, "aci_access_span_filter_group", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.span.filter_groups.name_suffix}"
@@ -594,10 +594,9 @@ module "aci_access_span_filter_group" {
     source_ip             = entry.source_ip
     destination_ip        = entry.destination_ip
     ip_protocol           = lookup(entry, "ip_protocol", local.defaults.apic.access_policies.span.filter_groups.entries.ip_protocol)
-    source_port_from      = lookup(entry, "source_port_from", local.defaults.apic.access_policies.span.filter_groups.entries.source_port_from)
-    source_port_to        = lookup(entry, "source_port_to", local.defaults.apic.access_policies.span.filter_groups.entries.source_port_to)
-    destination_port_to   = lookup(entry, "destination_port_to", local.defaults.apic.access_policies.span.filter_groups.entries.destination_port_to)
-    destination_port_from = lookup(entry, "destination_port_from", local.defaults.apic.access_policies.span.filter_groups.entries.destination_port_from)
+    source_from_port      = lookup(entry, "source_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.source_from_port)
+    source_to_port        = lookup(entry, "source_to_port", lookup(entry, "source_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.source_from_port))
+    destination_from_port = lookup(entry, "destination_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port)
+    destination_to_port   = lookup(entry, "destination_to_port", lookup(entry, "destination_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port))
   }]
-
 }

@@ -1,3 +1,7 @@
+## 0.2.2 (unreleased)
+
+- Add SPAN filter group module
+
 ## 0.2.1
 
 - Add `minimum_buffer`, `pfc_state`, `no_drop_cos`, `pfc_scope`, `ecn`, `forward_non_ecn`, `wred_max_threshold`, `wred_min_threshold`, `wred_probability`, `weight` attributes to QoS class
