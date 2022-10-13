@@ -1,9 +1,22 @@
 locals {
-  defaults        = lookup(var.model, "defaults", {})
-  modules         = lookup(var.model, "modules", {})
-  apic            = lookup(var.model, "apic", {})
-  access_policies = lookup(local.apic, "access_policies", {})
-  node_policies   = lookup(local.apic, "node_policies", {})
+  defaults           = lookup(var.model, "defaults", {})
+  modules            = lookup(var.model, "modules", {})
+  apic               = lookup(var.model, "apic", {})
+  access_policies    = lookup(local.apic, "access_policies", {})
+  node_policies      = lookup(local.apic, "node_policies", {})
+  interface_policies = lookup(local.apic, "interface_policies", {})
+
+  leaf_interface_policy_group_mapping = [
+    for pg in lookup(local.access_policies, "leaf_interface_policy_groups", []) : {
+      name = pg.name
+      type = pg.type
+      node_ids = [
+        for node in lookup(local.interface_policies, "nodes", []) :
+        node.id if length([for int in node.interfaces : lookup(int, "policy_group", null) if lookup(int, "policy_group", null) == pg.name]) > 0
+      ]
+    }
+  ]
+
   leaf_interface_selectors = flatten([
     for profile in lookup(local.access_policies, "leaf_interface_profiles", []) : [
       for selector in lookup(profile, "selectors", []) : {
@@ -80,6 +93,28 @@ locals {
       }
     ]
   ])
+
+  span_destination_groups = [for group in lookup(lookup(local.access_policies, "span", {}), "destination_groups", []) : {
+    name                = "${group.name}${local.defaults.apic.access_policies.span.destination_groups.name_suffix}"
+    description         = lookup(group, "description", "")
+    pod_id              = lookup(group, "pod_id", null)
+    node_id             = lookup(group, "node_id", lookup(group, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(group, "channel", null)][0][0], null) : null)
+    module              = lookup(group, "module", local.defaults.apic.access_policies.span.destination_groups.module)
+    port                = lookup(group, "port", 0)
+    sub_port            = lookup(group, "sub_port", 0)
+    channel             = lookup(group, "channel", "")
+    ip                  = lookup(group, "ip", "")
+    source_prefix       = lookup(group, "source_prefix", "")
+    dscp                = lookup(group, "dscp", local.defaults.apic.access_policies.span.destination_groups.dscp)
+    flow_id             = lookup(group, "flow_id", local.defaults.apic.access_policies.span.destination_groups.flow_id)
+    mtu                 = lookup(group, "mtu", local.defaults.apic.access_policies.span.destination_groups.mtu)
+    ttl                 = lookup(group, "ttl", local.defaults.apic.access_policies.span.destination_groups.ttl)
+    span_version        = lookup(group, "version", local.defaults.apic.access_policies.span.destination_groups.version)
+    enforce_version     = lookup(group, "enforce_version", local.defaults.apic.access_policies.span.destination_groups.enforce_version)
+    tenant              = lookup(group, "tenant", "")
+    application_profile = lookup(group, "application_profile", "")
+    endpoint_group      = lookup(group, "endpoint_group", "")
+  }]
 }
 
 module "aci_vlan_pool" {
@@ -599,4 +634,30 @@ module "aci_access_span_filter_group" {
     destination_from_port = lookup(entry, "destination_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port)
     destination_to_port   = lookup(entry, "destination_to_port", lookup(entry, "destination_from_port", local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port))
   }]
+}
+
+module "aci_access_span_destination_group" {
+  source  = "netascode/access-span-destination-group/aci"
+  version = ">= 0.1.1"
+
+  for_each            = { for group in local.span_destination_groups : group.name => group if lookup(local.modules, "aci_access_span_destination_group", true) }
+  name                = each.value.name
+  description         = each.value.description
+  pod_id              = each.value.pod_id != null ? each.value.pod_id : try([for node in lookup(local.node_policies, "nodes", []) : node.pod if node.id == each.value.pod_id][0], local.defaults.apic.node_policies.nodes.pod)
+  node_id             = each.value.node_id
+  module              = each.value.module
+  port                = each.value.port
+  sub_port            = each.value.sub_port
+  channel             = each.value.channel
+  ip                  = each.value.ip
+  source_prefix       = each.value.source_prefix
+  dscp                = each.value.dscp
+  flow_id             = each.value.flow_id
+  mtu                 = each.value.mtu
+  ttl                 = each.value.ttl
+  span_version        = each.value.span_version
+  enforce_version     = each.value.enforce_version
+  tenant              = each.value.tenant
+  application_profile = each.value.application_profile
+  endpoint_group      = each.value.endpoint_group
 }
