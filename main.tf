@@ -14,6 +14,12 @@ locals {
         for node in lookup(local.interface_policies, "nodes", []) :
         node.id if length([for int in node.interfaces : lookup(int, "policy_group", null) if lookup(int, "policy_group", null) == pg.name]) > 0
       ]
+      fex_ids = flatten([
+        for node in lookup(local.interface_policies, "nodes", []) : [
+          for fex in lookup(node, "fexes", []) :
+          fex.id if length([for int in fex.interfaces : lookup(int, "policy_group", null) if lookup(int, "policy_group", null) == pg.name]) > 0
+        ]
+      ])
     }
   ]
 
@@ -114,6 +120,39 @@ locals {
     tenant              = lookup(group, "tenant", "")
     application_profile = lookup(group, "application_profile", "")
     endpoint_group      = lookup(group, "endpoint_group", "")
+  }]
+
+  span_source_groups = [for group in lookup(lookup(local.access_policies, "span", {}), "source_groups", []) : {
+    name                    = "${group.name}${local.defaults.apic.access_policies.span.source_groups.name_suffix}"
+    description             = lookup(group, "description", "")
+    admin_state             = lookup(group, "admin_state", local.defaults.apic.access_policies.span.source_groups.admin_state)
+    filter_group            = lookup(group, "filter_group", "")
+    destination_name        = lookup(lookup(group, "destination", {}), "name", null)
+    destination_description = lookup(lookup(group, "destination", {}), "description", "")
+    sources = [for source in lookup(group, "sources", []) : {
+      description         = lookup(source, "description", "")
+      name                = source.name
+      direction           = lookup(source, "direction", local.defaults.apic.access_policies.span.source_groups.sources.direction)
+      span_drop           = lookup(source, "span_drop", local.defaults.apic.access_policies.span.source_groups.sources.span_drop)
+      tenant              = lookup(source, "tenant", "")
+      application_profile = lookup(source, "application_profile", "")
+      endpoint_group      = lookup(source, "endpoint_group", "")
+      l3out               = lookup(source, "l3out", "")
+      vlan                = lookup(source, "vlan", null)
+      access_paths = [for ap in lookup(source, "access_paths", []) : {
+        node_id = lookup(ap, "node_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
+        # set node2_id to "vpc" if channel IPG is vPC, otherwise "null"
+        node2_id = lookup(ap, "node2_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : pg.type if pg.name == lookup(ap, "channel", null) && pg.type == "vpc"][0], null) : null)
+        fex_id   = lookup(ap, "fex_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
+        # set fex2_id to "vpc" if channel IPG is vPC, otherwise "null"
+        fex2_id  = lookup(ap, "fex2_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : pg.type if pg.name == lookup(ap, "channel", null) && pg.type == "vpc"][0], null) : null)
+        pod_id   = lookup(ap, "pod_id", null)
+        port     = lookup(ap, "port", null)
+        sub_port = lookup(ap, "sub_port", null)
+        module   = lookup(ap, "module", local.defaults.apic.access_policies.span.source_groups.sources.access_paths.module)
+        channel  = lookup(ap, "channel", null)
+      }]
+    }]
   }]
 }
 
@@ -660,4 +699,39 @@ module "aci_access_span_destination_group" {
   tenant              = each.value.tenant
   application_profile = each.value.application_profile
   endpoint_group      = each.value.endpoint_group
+}
+
+module "aci_access_span_source_group" {
+  source  = "netascode/access-span-source-group/aci"
+  version = ">= 0.1.0"
+
+  for_each                = { for group in local.span_source_groups : group.name => group if lookup(local.modules, "aci_access_span_source_group", true) }
+  name                    = each.value.name
+  description             = each.value.description
+  admin_state             = each.value.admin_state
+  filter_group            = each.value.filter_group
+  destination_name        = each.value.destination_name
+  destination_description = each.value.destination_description
+  sources = [for source in lookup(each.value, "sources", []) : {
+    description         = source.description
+    name                = source.name
+    direction           = source.direction
+    span_drop           = source.span_drop
+    tenant              = source.tenant
+    application_profile = source.application_profile
+    endpoint_group      = source.endpoint_group
+    l3out               = source.l3out
+    vlan                = source.vlan
+    access_paths = [for ap in lookup(source, "access_paths", []) : {
+      node_id  = ap.node_id
+      node2_id = ap.node2_id == "vpc" ? [for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == ap.channel][0][1] : ap.node2_id
+      fex_id   = ap.fex_id
+      fex2_id  = ap.fex2_id == "vpc" ? [for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == ap.channel][0][1] : ap.fex2_id
+      pod_id   = ap.pod_id != null ? ap.pod_id : try([for node in lookup(local.node_policies, "nodes", []) : node.pod if node.id == ap.node_id][0], local.defaults.apic.node_policies.nodes.pod)
+      port     = ap.port
+      sub_port = ap.sub_port
+      module   = ap.module
+      channel  = ap.channel
+    }]
+  }]
 }
