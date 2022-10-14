@@ -620,7 +620,7 @@ module "aci_mcp" {
   admin_state         = lookup(lookup(local.access_policies, "mcp", {}), "admin_state", local.defaults.apic.access_policies.mcp.admin_state)
   per_vlan            = lookup(lookup(local.access_policies, "mcp", {}), "per_vlan", local.defaults.apic.access_policies.mcp.per_vlan)
   initial_delay       = lookup(lookup(local.access_policies, "mcp", {}), "initial_delay", local.defaults.apic.access_policies.mcp.initial_delay)
-  key                 = lookup(lookup(local.access_policies, "mcp", {}), "key", "")
+  key                 = lookup(lookup(local.access_policies, "mcp", {}), "key", local.defaults.apic.access_policies.mcp.key)
   loop_detection      = lookup(lookup(local.access_policies, "mcp", {}), "loop_detection", local.defaults.apic.access_policies.mcp.loop_detection)
   disable_port_action = lookup(lookup(local.access_policies, "mcp", {}), "action", local.defaults.apic.access_policies.mcp.action)
   frequency_sec       = lookup(lookup(local.access_policies, "mcp", {}), "frequency_sec", local.defaults.apic.access_policies.mcp.frequency_sec)
