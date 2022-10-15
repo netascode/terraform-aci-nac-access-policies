@@ -677,7 +677,7 @@ module "aci_access_span_filter_group" {
 
 module "aci_access_span_destination_group" {
   source  = "netascode/access-span-destination-group/aci"
-  version = ">= 0.1.1"
+  version = ">= 0.1.2"
 
   for_each            = { for group in local.span_destination_groups : group.name => group if lookup(local.modules, "aci_access_span_destination_group", true) }
   name                = each.value.name
