@@ -469,7 +469,7 @@ module "aci_storm_control_policy" {
 
 module "aci_access_leaf_interface_policy_group" {
   source  = "netascode/access-leaf-interface-policy-group/aci"
-  version = ">= 0.1.2"
+  version = ">= 0.1.3"
 
   for_each                   = { for pg in lookup(local.access_policies, "leaf_interface_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_leaf_interface_policy_group", true) }
   name                       = "${each.value.name}${local.defaults.apic.access_policies.leaf_interface_policy_groups.name_suffix}"
