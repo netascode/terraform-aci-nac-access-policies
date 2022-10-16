@@ -158,7 +158,7 @@ locals {
 
 module "aci_vlan_pool" {
   source  = "netascode/vlan-pool/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each   = { for vp in lookup(local.access_policies, "vlan_pools", []) : vp.name => vp if lookup(local.modules, "aci_vlan_pool", true) }
   name       = "${each.value.name}${local.defaults.apic.access_policies.vlan_pools.name_suffix}"
@@ -173,7 +173,7 @@ module "aci_vlan_pool" {
 
 module "aci_physical_domain" {
   source  = "netascode/physical-domain/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each             = { for pd in lookup(local.access_policies, "physical_domains", []) : pd.name => pd if lookup(local.modules, "aci_physical_domain", true) }
   name                 = "${each.value.name}${local.defaults.apic.access_policies.physical_domains.name_suffix}"
@@ -187,7 +187,7 @@ module "aci_physical_domain" {
 
 module "aci_routed_domain" {
   source  = "netascode/routed-domain/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each             = { for rd in lookup(local.access_policies, "routed_domains", []) : rd.name => rd if lookup(local.modules, "aci_routed_domain", true) }
   name                 = "${each.value.name}${local.defaults.apic.access_policies.routed_domains.name_suffix}"
@@ -201,7 +201,7 @@ module "aci_routed_domain" {
 
 module "aci_aaep" {
   source  = "netascode/aaep/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each           = { for aaep in lookup(local.access_policies, "aaeps", []) : aaep.name => aaep if lookup(local.modules, "aci_aaep", true) }
   name               = "${each.value.name}${local.defaults.apic.access_policies.aaeps.name_suffix}"
@@ -219,7 +219,7 @@ module "aci_aaep" {
 
 module "aci_mst_policy" {
   source  = "netascode/mst-policy/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each = { for mst in lookup(lookup(local.access_policies, "switch_policies", {}), "mst_policies", []) : mst.name => mst if lookup(local.modules, "aci_mst_policy", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.mst_policies.name_suffix}"
@@ -237,7 +237,7 @@ module "aci_mst_policy" {
 
 module "aci_vpc_policy" {
   source  = "netascode/vpc-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each           = { for vpc in lookup(lookup(local.access_policies, "switch_policies", {}), "vpc_policies", []) : vpc.name => vpc if lookup(local.modules, "aci_vpc_policy", true) }
   name               = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.vpc_policies.name_suffix}"
@@ -246,7 +246,7 @@ module "aci_vpc_policy" {
 
 module "aci_forwarding_scale_policy" {
   source  = "netascode/forwarding-scale-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for fs in lookup(lookup(local.access_policies, "switch_policies", {}), "forwarding_scale_policies", []) : fs.name => fs if lookup(local.modules, "aci_forwarding_scale_policy", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.forwarding_scale_policies.name_suffix}"
@@ -255,7 +255,7 @@ module "aci_forwarding_scale_policy" {
 
 module "aci_access_leaf_switch_policy_group" {
   source  = "netascode/access-leaf-switch-policy-group/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each                = { for pg in lookup(local.access_policies, "leaf_switch_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_leaf_switch_policy_group", true) }
   name                    = "${each.value.name}${local.defaults.apic.access_policies.leaf_switch_policy_groups.name_suffix}"
@@ -268,7 +268,7 @@ module "aci_access_leaf_switch_policy_group" {
 
 module "aci_access_leaf_switch_profile_auto" {
   source  = "netascode/access-leaf-switch-profile/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_leaf_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_switch_profile_name", local.defaults.apic.access_policies.leaf_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -292,7 +292,7 @@ module "aci_access_leaf_switch_profile_auto" {
 
 module "aci_access_leaf_switch_profile_manual" {
   source  = "netascode/access-leaf-switch-profile/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each = { for prof in lookup(local.access_policies, "leaf_switch_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_leaf_switch_profile", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.leaf_switch_profiles.name_suffix}"
@@ -316,7 +316,7 @@ module "aci_access_leaf_switch_profile_manual" {
 
 module "aci_access_spine_switch_profile_auto" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_profile_name", local.defaults.apic.access_policies.spine_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -338,7 +338,7 @@ module "aci_access_spine_switch_profile_auto" {
 
 module "aci_access_spine_switch_profile_manual" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each = { for prof in lookup(local.access_policies, "spine_switch_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name     = each.value.name
@@ -360,7 +360,7 @@ module "aci_access_spine_switch_profile_manual" {
 
 module "aci_cdp_policy" {
   source  = "netascode/cdp-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each    = { for cdp in lookup(lookup(local.access_policies, "interface_policies", {}), "cdp_policies", []) : cdp.name => cdp if lookup(local.modules, "aci_cdp_policy", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.cdp_policies.name_suffix}"
@@ -369,7 +369,7 @@ module "aci_cdp_policy" {
 
 module "aci_lldp_policy" {
   source  = "netascode/lldp-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each       = { for lldp in lookup(lookup(local.access_policies, "interface_policies", {}), "lldp_policies", []) : lldp.name => lldp if lookup(local.modules, "aci_lldp_policy", true) }
   name           = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.lldp_policies.name_suffix}"
@@ -379,7 +379,7 @@ module "aci_lldp_policy" {
 
 module "aci_link_level_policy" {
   source  = "netascode/link-level-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for llp in lookup(lookup(local.access_policies, "interface_policies", {}), "link_level_policies", []) : llp.name => llp if lookup(local.modules, "aci_link_level_policy", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.link_level_policies.name_suffix}"
@@ -390,7 +390,7 @@ module "aci_link_level_policy" {
 
 module "aci_port_channel_policy" {
   source  = "netascode/port-channel-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each             = { for pc in lookup(lookup(local.access_policies, "interface_policies", {}), "port_channel_policies", []) : pc.name => pc if lookup(local.modules, "aci_port_channel_policy", true) }
   name                 = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.port_channel_policies.name_suffix}"
@@ -407,7 +407,7 @@ module "aci_port_channel_policy" {
 
 module "aci_port_channel_member_policy" {
   source  = "netascode/port-channel-member-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for pcm in lookup(lookup(local.access_policies, "interface_policies", {}), "port_channel_member_policies", []) : pcm.name => pcm if lookup(local.modules, "aci_port_channel_member_policy", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.port_channel_member_policies.name_suffix}"
@@ -417,7 +417,7 @@ module "aci_port_channel_member_policy" {
 
 module "aci_spanning_tree_policy" {
   source  = "netascode/spanning-tree-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each    = { for stp in lookup(lookup(local.access_policies, "interface_policies", {}), "spanning_tree_policies", []) : stp.name => stp if lookup(local.modules, "aci_spanning_tree_policy", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.name_suffix}"
@@ -427,7 +427,7 @@ module "aci_spanning_tree_policy" {
 
 module "aci_mcp_policy" {
   source  = "netascode/mcp-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each    = { for mcp in lookup(lookup(local.access_policies, "interface_policies", {}), "mcp_policies", []) : mcp.name => mcp if lookup(local.modules, "aci_mcp_policy", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.mcp_policies.name_suffix}"
@@ -436,7 +436,7 @@ module "aci_mcp_policy" {
 
 module "aci_l2_policy" {
   source  = "netascode/l2-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each   = { for l2 in lookup(lookup(local.access_policies, "interface_policies", {}), "l2_policies", []) : l2.name => l2 if lookup(local.modules, "aci_l2_policy", true) }
   name       = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.l2_policies.name_suffix}"
@@ -446,7 +446,7 @@ module "aci_l2_policy" {
 
 module "aci_storm_control_policy" {
   source  = "netascode/storm-control-policy/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each                   = { for sc in lookup(lookup(local.access_policies, "interface_policies", {}), "storm_control_policies", []) : sc.name => sc if lookup(local.modules, "aci_storm_control_policy", true) }
   name                       = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.storm_control_policies.name_suffix}"
@@ -469,7 +469,7 @@ module "aci_storm_control_policy" {
 
 module "aci_access_leaf_interface_policy_group" {
   source  = "netascode/access-leaf-interface-policy-group/aci"
-  version = ">= 0.1.3"
+  version = "0.1.3"
 
   for_each                   = { for pg in lookup(local.access_policies, "leaf_interface_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_leaf_interface_policy_group", true) }
   name                       = "${each.value.name}${local.defaults.apic.access_policies.leaf_interface_policy_groups.name_suffix}"
@@ -502,7 +502,7 @@ module "aci_access_leaf_interface_policy_group" {
 
 module "aci_access_spine_interface_policy_group" {
   source  = "netascode/access-spine-interface-policy-group/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each          = { for pg in lookup(local.access_policies, "spine_interface_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_spine_interface_policy_group", true) }
   name              = "${each.value.name}${local.defaults.apic.access_policies.spine_interface_policy_groups.name_suffix}"
@@ -519,7 +519,7 @@ module "aci_access_spine_interface_policy_group" {
 
 module "aci_access_leaf_interface_profile_auto" {
   source  = "netascode/access-leaf-interface-profile/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_leaf_interface_profile", true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_interface_profile_name", local.defaults.apic.access_policies.leaf_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -527,7 +527,7 @@ module "aci_access_leaf_interface_profile_auto" {
 
 module "aci_access_leaf_interface_profile_manual" {
   source  = "netascode/access-leaf-interface-profile/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for prof in lookup(local.access_policies, "leaf_interface_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_leaf_interface_profile", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.leaf_interface_profiles.name_suffix}"
@@ -535,7 +535,7 @@ module "aci_access_leaf_interface_profile_manual" {
 
 module "aci_access_leaf_interface_selector_manual" {
   source  = "netascode/access-leaf-interface-selector/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each              = { for selector in local.leaf_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_leaf_interface_selector", true) }
   interface_profile     = each.value.profile_name
@@ -556,7 +556,7 @@ module "aci_access_leaf_interface_selector_manual" {
 
 module "aci_access_fex_interface_profile_manual" {
   source  = "netascode/access-fex-interface-profile/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = toset([for fex in lookup(local.access_policies, "fex_interface_profiles", []) : fex.name if lookup(local.modules, "aci_access_fex_interface_profile", true)])
   name     = "${each.value}${local.defaults.apic.access_policies.fex_interface_profiles.name_suffix}"
@@ -564,7 +564,7 @@ module "aci_access_fex_interface_profile_manual" {
 
 module "aci_access_fex_interface_selector_manual" {
   source  = "netascode/access-fex-interface-selector/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each          = { for selector in local.fex_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_fex_interface_selector", true) }
   interface_profile = each.value.profile_name
@@ -581,7 +581,7 @@ module "aci_access_fex_interface_selector_manual" {
 
 module "aci_access_spine_interface_profile_auto" {
   source  = "netascode/access-spine-interface-profile/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_interface_profile", true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_interface_profile_name", local.defaults.apic.access_policies.spine_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
@@ -589,7 +589,7 @@ module "aci_access_spine_interface_profile_auto" {
 
 module "aci_access_spine_interface_profile_manual" {
   source  = "netascode/access-spine-interface-profile/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each = { for prof in lookup(local.access_policies, "spine_interface_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_spine_interface_profile", true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.spine_interface_profiles.name_suffix}"
@@ -597,7 +597,7 @@ module "aci_access_spine_interface_profile_manual" {
 
 module "aci_access_spine_interface_selector_manual" {
   source  = "netascode/access-spine-interface-selector/aci"
-  version = ">= 0.2.0"
+  version = "0.2.0"
 
   for_each          = { for selector in local.spine_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_spine_interface_selector", true) }
   interface_profile = each.value.profile_name
@@ -614,7 +614,7 @@ module "aci_access_spine_interface_selector_manual" {
 
 module "aci_mcp" {
   source  = "netascode/mcp/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   count               = lookup(local.modules, "aci_mcp", true) == false ? 0 : 1
   admin_state         = lookup(lookup(local.access_policies, "mcp", {}), "admin_state", local.defaults.apic.access_policies.mcp.admin_state)
@@ -629,7 +629,7 @@ module "aci_mcp" {
 
 module "aci_qos" {
   source  = "netascode/qos/aci"
-  version = ">= 0.2.1"
+  version = "0.2.1"
 
   count        = lookup(local.modules, "aci_qos", true) == false ? 0 : 1
   preserve_cos = lookup(lookup(local.access_policies, "qos", {}), "preserve_cos", local.defaults.apic.access_policies.qos.preserve_cos)
@@ -657,7 +657,7 @@ module "aci_qos" {
 
 module "aci_access_span_filter_group" {
   source  = "netascode/access-span-filter-group/aci"
-  version = ">= 0.1.1"
+  version = "0.1.1"
 
   for_each    = { for group in lookup(lookup(local.access_policies, "span", {}), "filter_groups", []) : group.name => group if lookup(local.modules, "aci_access_span_filter_group", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.span.filter_groups.name_suffix}"
@@ -677,7 +677,7 @@ module "aci_access_span_filter_group" {
 
 module "aci_access_span_destination_group" {
   source  = "netascode/access-span-destination-group/aci"
-  version = ">= 0.1.2"
+  version = "0.1.2"
 
   for_each            = { for group in local.span_destination_groups : group.name => group if lookup(local.modules, "aci_access_span_destination_group", true) }
   name                = each.value.name
@@ -703,7 +703,7 @@ module "aci_access_span_destination_group" {
 
 module "aci_access_span_source_group" {
   source  = "netascode/access-span-source-group/aci"
-  version = ">= 0.1.0"
+  version = "0.1.0"
 
   for_each                = { for group in local.span_source_groups : group.name => group if lookup(local.modules, "aci_access_span_source_group", true) }
   name                    = each.value.name

@@ -1,8 +1,9 @@
-## 0.2.2 (unreleased)
+## 0.3.0 (unreleased)
 
 - Add SPAN filter group module
 - Add SPAN destination group module
 - Add SPAN source group module
+- Pin module dependencies
 
 ## 0.2.1
 
