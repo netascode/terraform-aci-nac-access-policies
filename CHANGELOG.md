@@ -1,4 +1,4 @@
-## 0.3.0 (unreleased)
+## 0.3.0
 
 - Add SPAN filter group module
 - Add SPAN destination group module
