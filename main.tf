@@ -317,13 +317,14 @@ module "aci_access_leaf_switch_profile_manual" {
 
 module "aci_access_spine_switch_profile_auto" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = "0.2.0"
+  version = "0.2.1"
 
   for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_profile_name", local.defaults.apic.access_policies.spine_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
   interface_profiles = [replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_interface_profile_name", local.defaults.apic.access_policies.spine_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))]
   selectors = [{
-    name = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_selector_name", local.defaults.apic.access_policies.spine_switch_selector_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
+    name         = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_selector_name", local.defaults.apic.access_policies.spine_switch_selector_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
+    policy_group = lookup(each.value, "access_policy_group", null) != null ? "${each.value.access_policy_group}${local.defaults.apic.access_policies.spine_switch_policy_groups.name_suffix}" : null
     node_blocks = [{
       name = each.value.id
       from = each.value.id
@@ -339,12 +340,13 @@ module "aci_access_spine_switch_profile_auto" {
 
 module "aci_access_spine_switch_profile_manual" {
   source  = "netascode/access-spine-switch-profile/aci"
-  version = "0.2.0"
+  version = "0.2.1"
 
   for_each = { for prof in lookup(local.access_policies, "spine_switch_profiles", []) : prof.name => prof if lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name     = each.value.name
   selectors = [for selector in lookup(each.value, "selectors", []) : {
-    name = "${selector.name}${local.defaults.apic.access_policies.spine_switch_profiles.selectors.name_suffix}"
+    name         = "${selector.name}${local.defaults.apic.access_policies.spine_switch_profiles.selectors.name_suffix}"
+    policy_group = lookup(selector, "policy", null) != null ? "${selector.policy}${local.defaults.apic.access_policies.spine_switch_policy_groups.name_suffix}" : null
     node_blocks = [for block in lookup(selector, "node_blocks", []) : {
       name = "${block.name}${local.defaults.apic.access_policies.spine_switch_profiles.selectors.node_blocks.name_suffix}"
       from = block.from

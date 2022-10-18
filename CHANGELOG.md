@@ -2,6 +2,7 @@
 
 - Add description attribute to vlan pool module
 - Add description attribute to interface policy group module
+- Add `policy_group` attribute to access spine switch profiles
 
 ## 0.3.0
 
