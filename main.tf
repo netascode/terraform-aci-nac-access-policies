@@ -158,17 +158,18 @@ locals {
 
 module "aci_vlan_pool" {
   source  = "netascode/vlan-pool/aci"
-  version = "0.2.1"
+  version = "0.2.2"
 
   for_each    = { for vp in lookup(local.access_policies, "vlan_pools", []) : vp.name => vp if lookup(local.modules, "aci_vlan_pool", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.vlan_pools.name_suffix}"
   description = lookup(each.value, "description", "")
   allocation  = lookup(each.value, "allocation", local.defaults.apic.access_policies.vlan_pools.allocation)
   ranges = [for range in lookup(each.value, "ranges", []) : {
-    from       = range.from
-    to         = lookup(range, "to", range.from)
-    allocation = lookup(range, "allocation", local.defaults.apic.access_policies.vlan_pools.ranges.allocation)
-    role       = lookup(range, "role", local.defaults.apic.access_policies.vlan_pools.ranges.role)
+    description = lookup(range, "description", "")
+    from        = range.from
+    to          = lookup(range, "to", range.from)
+    allocation  = lookup(range, "allocation", local.defaults.apic.access_policies.vlan_pools.ranges.allocation)
+    role        = lookup(range, "role", local.defaults.apic.access_policies.vlan_pools.ranges.role)
   }]
 }
 
