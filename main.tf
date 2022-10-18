@@ -268,6 +268,19 @@ module "aci_access_leaf_switch_policy_group" {
   ]
 }
 
+module "aci_access_spine_switch_policy_group" {
+  source  = "netascode/access-spine-switch-policy-group/aci"
+  version = "0.1.0"
+
+  for_each    = { for pg in lookup(local.access_policies, "spine_switch_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_spine_switch_policy_group", true) }
+  name        = "${each.value.name}${local.defaults.apic.access_policies.spine_switch_policy_groups.name_suffix}"
+  lldp_policy = lookup(each.value, "lldp_policy", null) != null ? "${each.value.lldp_policy}${local.defaults.apic.access_policies.interface_policies.lldp_policies.name_suffix}" : ""
+
+  depends_on = [
+    module.aci_lldp_policy,
+  ]
+}
+
 module "aci_access_leaf_switch_profile_auto" {
   source  = "netascode/access-leaf-switch-profile/aci"
   version = "0.2.0"
