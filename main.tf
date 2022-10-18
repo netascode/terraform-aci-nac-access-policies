@@ -470,10 +470,11 @@ module "aci_storm_control_policy" {
 
 module "aci_access_leaf_interface_policy_group" {
   source  = "netascode/access-leaf-interface-policy-group/aci"
-  version = "0.1.3"
+  version = "0.1.4"
 
   for_each                   = { for pg in lookup(local.access_policies, "leaf_interface_policy_groups", []) : pg.name => pg if lookup(local.modules, "aci_access_leaf_interface_policy_group", true) }
   name                       = "${each.value.name}${local.defaults.apic.access_policies.leaf_interface_policy_groups.name_suffix}"
+  description                = lookup(each.value, "description", "")
   type                       = each.value.type
   map                        = lookup(each.value, "map", local.defaults.apic.access_policies.leaf_interface_policy_groups.map)
   link_level_policy          = lookup(each.value, "link_level_policy", null) != null ? "${each.value.link_level_policy}${local.defaults.apic.access_policies.interface_policies.link_level_policies.name_suffix}" : ""
