@@ -1,4 +1,4 @@
-## 0.3.1 (unreleased)
+## 0.3.1
 
 - Add description attribute to vlan pool module
 - Add description attribute to interface policy group module
