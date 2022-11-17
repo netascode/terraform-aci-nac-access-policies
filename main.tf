@@ -553,7 +553,7 @@ module "aci_access_leaf_interface_profile_manual" {
 
 module "aci_access_leaf_interface_selector_manual" {
   source  = "netascode/access-leaf-interface-selector/aci"
-  version = "0.2.0"
+  version = "0.2.1"
 
   for_each              = { for selector in local.leaf_interface_selectors : selector.key => selector.value if lookup(local.modules, "aci_access_leaf_interface_selector", true) }
   interface_profile     = each.value.profile_name

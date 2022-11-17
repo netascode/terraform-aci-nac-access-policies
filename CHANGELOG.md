@@ -1,3 +1,7 @@
+## 0.3.2 (unreleased)
+
+- Add colon to allowed characters of leaf interface selector names
+
 ## 0.3.1
 
 - Add description attribute to vlan pool module
