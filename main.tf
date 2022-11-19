@@ -675,7 +675,7 @@ module "aci_qos" {
 
 module "aci_access_span_filter_group" {
   source  = "netascode/access-span-filter-group/aci"
-  version = "0.1.1"
+  version = "0.1.2"
 
   for_each    = { for group in lookup(lookup(local.access_policies, "span", {}), "filter_groups", []) : group.name => group if lookup(local.modules, "aci_access_span_filter_group", true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.span.filter_groups.name_suffix}"
