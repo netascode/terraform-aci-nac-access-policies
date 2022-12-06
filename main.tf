@@ -285,7 +285,7 @@ module "aci_access_leaf_switch_profile_auto" {
   source  = "netascode/access-leaf-switch-profile/aci"
   version = "0.2.0"
 
-  for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_leaf_switch_profile", true) }
+  for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && (lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) || lookup(local.apic, "auto_generate_access_leaf_switch_interface_profiles", local.defaults.apic.auto_generate_access_leaf_switch_interface_profiles)) && lookup(local.modules, "aci_access_leaf_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_switch_profile_name", local.defaults.apic.access_policies.leaf_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
   interface_profiles = [replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_interface_profile_name", local.defaults.apic.access_policies.leaf_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))]
   selectors = [{
@@ -333,7 +333,7 @@ module "aci_access_spine_switch_profile_auto" {
   source  = "netascode/access-spine-switch-profile/aci"
   version = "0.2.1"
 
-  for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_switch_profile", true) }
+  for_each           = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && (lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) || lookup(local.apic, "auto_generate_access_spine_switch_interface_profiles", local.defaults.apic.auto_generate_access_spine_switch_interface_profiles)) && lookup(local.modules, "aci_access_spine_switch_profile", true) }
   name               = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_switch_profile_name", local.defaults.apic.access_policies.spine_switch_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
   interface_profiles = [replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_interface_profile_name", local.defaults.apic.access_policies.spine_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))]
   selectors = [{
@@ -539,7 +539,7 @@ module "aci_access_leaf_interface_profile_auto" {
   source  = "netascode/access-leaf-interface-profile/aci"
   version = "0.1.0"
 
-  for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_leaf_interface_profile", true) }
+  for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "leaf" && (lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) || lookup(local.apic, "auto_generate_access_leaf_switch_interface_profiles", local.defaults.apic.auto_generate_access_leaf_switch_interface_profiles)) && lookup(local.modules, "aci_access_leaf_interface_profile", true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "leaf_interface_profile_name", local.defaults.apic.access_policies.leaf_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
 }
 
@@ -601,7 +601,7 @@ module "aci_access_spine_interface_profile_auto" {
   source  = "netascode/access-spine-interface-profile/aci"
   version = "0.1.0"
 
-  for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) && lookup(local.modules, "aci_access_spine_interface_profile", true) }
+  for_each = { for node in lookup(local.node_policies, "nodes", []) : node.id => node if node.role == "spine" && (lookup(local.apic, "auto_generate_switch_pod_profiles", local.defaults.apic.auto_generate_switch_pod_profiles) || lookup(local.apic, "auto_generate_access_spine_switch_interface_profiles", local.defaults.apic.auto_generate_access_spine_switch_interface_profiles)) && lookup(local.modules, "aci_access_spine_interface_profile", true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(lookup(local.access_policies, "spine_interface_profile_name", local.defaults.apic.access_policies.spine_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
 }
 
