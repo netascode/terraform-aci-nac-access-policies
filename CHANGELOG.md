@@ -1,4 +1,4 @@
-## 0.3.2 (unreleased)
+## 0.3.2
 
 - Add colon to allowed characters of leaf interface selector names
 - Normalize access SPAN filter `protocol` and `port` values
