@@ -1,3 +1,7 @@
+## 0.3.3 (unreleased)
+
+- Add `reflective_relay` attribute to L2 policy
+
 ## 0.3.2
 
 - Add colon to allowed characters of leaf interface selector names

@@ -453,12 +453,13 @@ module "aci_mcp_policy" {
 
 module "aci_l2_policy" {
   source  = "netascode/l2-policy/aci"
-  version = "0.1.0"
+  version = "0.1.1"
 
-  for_each   = { for l2 in lookup(lookup(local.access_policies, "interface_policies", {}), "l2_policies", []) : l2.name => l2 if lookup(local.modules, "aci_l2_policy", true) }
-  name       = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.l2_policies.name_suffix}"
-  vlan_scope = lookup(each.value, "vlan_scope", local.defaults.apic.access_policies.interface_policies.l2_policies.vlan_scope)
-  qinq       = lookup(each.value, "qinq", local.defaults.apic.access_policies.interface_policies.l2_policies.qinq)
+  for_each         = { for l2 in lookup(lookup(local.access_policies, "interface_policies", {}), "l2_policies", []) : l2.name => l2 if lookup(local.modules, "aci_l2_policy", true) }
+  name             = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.l2_policies.name_suffix}"
+  vlan_scope       = lookup(each.value, "vlan_scope", local.defaults.apic.access_policies.interface_policies.l2_policies.vlan_scope)
+  qinq             = lookup(each.value, "qinq", local.defaults.apic.access_policies.interface_policies.l2_policies.qinq)
+  reflective_relay = lookup(each.value, "reflective_relay", local.defaults.apic.access_policies.interface_policies.l2_policies.reflective_relay)
 }
 
 module "aci_storm_control_policy" {
