@@ -754,3 +754,25 @@ module "aci_access_span_source_group" {
     }]
   }]
 }
+
+module "aci_vspan_destination_group" {
+  source  = "netascode/vspan-destination-group/aci"
+  version = "0.1.0"
+
+  for_each    = { for group in try(local.access_policies.vspan.destination_groups, []) : group.name => group if lookup(local.modules, "aci_vspan_destination_group", true) }
+  name        = "${each.value.name}${local.defaults.apic.access_policies.vspan.destination_groups.name_suffix}"
+  description = try(each.value.description, "")
+  destinations = [for dest in try(each.value.destinations, []) : {
+    name                = "${dest.name}${local.defaults.apic.access_policies.vspan.destination_groups.destinations.name_suffix}"
+    description         = try(dest.description, "")
+    tenant              = try(dest.tenant, null)
+    application_profile = try(dest.application_profile, null)
+    endpoint_group      = try(dest.endpoint_group, null)
+    client_endpont      = try(dest.client_endpont, null)
+    ip                  = try(dest.ip, null)
+    mtu                 = try(dest.mtu, local.defaults.apic.access_policies.vspan.destination_groups.destinations.mtu)
+    ttl                 = try(dest.ttl, local.defaults.apic.access_policies.vspan.destination_groups.destinations.ttl)
+    flow_id             = try(dest.flow_id, local.defaults.apic.access_policies.vspan.destination_groups.destinations.flow_id)
+    dscp                = try(dest.dscp, local.defaults.apic.access_policies.vspan.destination_groups.destinations.dscp)
+  }]
+}

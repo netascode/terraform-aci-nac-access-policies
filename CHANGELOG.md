@@ -1,6 +1,7 @@
 ## 0.3.3 (unreleased)
 
 - Add `reflective_relay` attribute to L2 policy
+- Add VSPAN destination group
 
 ## 0.3.2
 
