@@ -768,7 +768,7 @@ module "aci_vspan_destination_group" {
     tenant              = try(dest.tenant, null)
     application_profile = try(dest.application_profile, null)
     endpoint_group      = try(dest.endpoint_group, null)
-    endpont             = try(dest.endpont, null)
+    endpoint            = try(dest.endpoint, null)
     ip                  = try(dest.ip, null)
     mtu                 = try(dest.mtu, local.defaults.apic.access_policies.vspan.destination_groups.destinations.mtu)
     ttl                 = try(dest.ttl, local.defaults.apic.access_policies.vspan.destination_groups.destinations.ttl)
