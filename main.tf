@@ -168,7 +168,7 @@ locals {
       tenant              = lookup(source, "tenant", null)
       application_profile = lookup(source, "application_profile", null)
       endpoint_group      = lookup(source, "endpoint_group", null)
-      endpoint            = lookup(source, "endpoint", "")
+      endpoint            = lookup(source, "endpoint", null)
       access_paths = [for ap in lookup(source, "access_paths", []) : {
         node_id = lookup(ap, "node_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
         # set node2_id to "vpc" if channel IPG is vPC, otherwise "null"
