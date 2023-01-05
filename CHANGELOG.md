@@ -2,6 +2,7 @@
 
 - Add `reflective_relay` attribute to L2 policy
 - Add VSPAN destination group
+- Add VSPAN access session
 
 ## 0.3.2
 

@@ -807,11 +807,11 @@ module "aci_vspan_destination_group" {
   }]
 }
 
-module "aci_access_vspan_session" {
+module "aci_vspan_session" {
   source  = "netascode/vspan-session/aci"
   version = "0.1.0"
 
-  for_each                = { for session in local.vspan_sessions : session.name => session if lookup(local.modules, "aci_access_vspan_sessions", true) }
+  for_each                = { for session in local.vspan_sessions : session.name => session if lookup(local.modules, "aci_vspan_session", true) }
   name                    = each.value.name
   description             = each.value.description
   admin_state             = each.value.admin_state
