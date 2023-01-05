@@ -154,6 +154,36 @@ locals {
       }]
     }]
   }]
+
+  vspan_sessions = [for session in lookup(lookup(local.access_policies, "vspan", {}), "sessions", []) : {
+    name                    = "${session.name}${local.defaults.apic.access_policies.vspan.sessions.name_suffix}"
+    description             = lookup(session, "description", "")
+    admin_state             = lookup(session, "admin_state", local.defaults.apic.access_policies.vspan.sessions.admin_state)
+    destination_name        = lookup(lookup(session, "destination", {}), "name", null)
+    destination_description = lookup(lookup(session, "destination", {}), "description", "")
+    sources = [for source in lookup(session, "sources", []) : {
+      description         = lookup(source, "description", "")
+      name                = source.name
+      direction           = lookup(source, "direction", local.defaults.apic.access_policies.vspan.sessions.sources.direction)
+      tenant              = lookup(source, "tenant", null)
+      application_profile = lookup(source, "application_profile", null)
+      endpoint_group      = lookup(source, "endpoint_group", null)
+      endpoint            = lookup(source, "endpoint", "")
+      access_paths = [for ap in lookup(source, "access_paths", []) : {
+        node_id = lookup(ap, "node_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
+        # set node2_id to "vpc" if channel IPG is vPC, otherwise "null"
+        node2_id = lookup(ap, "node2_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : pg.type if pg.name == lookup(ap, "channel", null) && pg.type == "vpc"][0], null) : null)
+        fex_id   = lookup(ap, "fex_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == lookup(ap, "channel", null)][0][0], null) : null)
+        # set fex2_id to "vpc" if channel IPG is vPC, otherwise "null"
+        fex2_id  = lookup(ap, "fex2_id", lookup(ap, "channel", null) != null ? try([for pg in local.leaf_interface_policy_group_mapping : pg.type if pg.name == lookup(ap, "channel", null) && pg.type == "vpc"][0], null) : null)
+        pod_id   = lookup(ap, "pod_id", null)
+        port     = lookup(ap, "port", null)
+        sub_port = lookup(ap, "sub_port", null)
+        module   = lookup(ap, "module", local.defaults.apic.access_policies.vspan.sessions.sources.access_paths.module)
+        channel  = lookup(ap, "channel", null)
+      }]
+    }]
+  }]
 }
 
 module "aci_vlan_pool" {
@@ -774,5 +804,37 @@ module "aci_vspan_destination_group" {
     ttl                 = try(dest.ttl, local.defaults.apic.access_policies.vspan.destination_groups.destinations.ttl)
     flow_id             = try(dest.flow_id, local.defaults.apic.access_policies.vspan.destination_groups.destinations.flow_id)
     dscp                = try(dest.dscp, local.defaults.apic.access_policies.vspan.destination_groups.destinations.dscp)
+  }]
+}
+
+module "aci_access_vspan_session" {
+  source  = "netascode/vspan-session/aci"
+  version = "0.1.0"
+
+  for_each                = { for session in local.vspan_sessions : session.name => session if lookup(local.modules, "aci_access_vspan_sessions", true) }
+  name                    = each.value.name
+  description             = each.value.description
+  admin_state             = each.value.admin_state
+  destination_name        = each.value.destination_name
+  destination_description = each.value.destination_description
+  sources = [for source in lookup(each.value, "sources", []) : {
+    description         = source.description
+    name                = source.name
+    direction           = source.direction
+    tenant              = source.tenant
+    application_profile = source.application_profile
+    endpoint_group      = source.endpoint_group
+    endpoint            = source.endpoint
+    access_paths = [for ap in lookup(source, "access_paths", []) : {
+      node_id  = ap.node_id
+      node2_id = ap.node2_id == "vpc" ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "node_ids", []) if pg.name == ap.channel][0][1], null) : ap.node2_id
+      fex_id   = ap.fex_id
+      fex2_id  = ap.fex2_id == "vpc" ? try([for pg in local.leaf_interface_policy_group_mapping : lookup(pg, "fex_ids", []) if pg.name == ap.channel][0][1], null) : ap.fex2_id
+      pod_id   = ap.pod_id != null ? ap.pod_id : try([for node in lookup(local.node_policies, "nodes", []) : node.pod if node.id == ap.node_id][0], local.defaults.apic.node_policies.nodes.pod)
+      port     = ap.port
+      sub_port = ap.sub_port
+      module   = ap.module
+      channel  = ap.channel
+    }]
   }]
 }
