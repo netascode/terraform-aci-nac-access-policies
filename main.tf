@@ -469,7 +469,7 @@ module "aci_spanning_tree_policy" {
   for_each    = { for stp in try(local.access_policies.interface_policies.spanning_tree_policies, []) : stp.name => stp if try(local.modules.aci_spanning_tree_policy, true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.name_suffix}"
   bpdu_filter = try(each.value.bpdu_filter, local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.bpdu_filter)
-  bpdu_guard  = lotryokup(each.value.bpdu_guard, local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.bpdu_guard)
+  bpdu_guard  = try(each.value.bpdu_guard, local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.bpdu_guard)
 }
 
 module "aci_mcp_policy" {
