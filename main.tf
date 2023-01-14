@@ -731,7 +731,7 @@ module "aci_access_span_destination_group" {
   for_each            = { for group in local.span_destination_groups : group.name => group if try(local.modules.aci_access_span_destination_group, true) }
   name                = each.value.name
   description         = each.value.description
-  pod_id              = try(each.value.pod_id, [for node in local.node_policies.nodes : node.pod if node.id == each.value.pod_id][0], local.defaults.apic.node_policies.nodes.pod)
+  pod_id              = each.value.pod_id != null ? each.value.pod_id : try([for node in local.node_policies.nodes : node.pod if node.id == each.value.pod_id][0], local.defaults.apic.node_policies.nodes.pod)
   node_id             = each.value.node_id
   module              = each.value.module
   port                = each.value.port
