@@ -1,5 +1,6 @@
 locals {
-  defaults           = try(var.model.defaults, {})
+  user_defaults      = { "defaults" : try(var.model.defaults, {}) }
+  defaults           = lookup(yamldecode(data.utils_yaml_merge.defaults.output), "defaults")
   modules            = try(var.model.modules, {})
   apic               = try(var.model.apic, {})
   access_policies    = try(local.apic.access_policies, {})
@@ -186,6 +187,16 @@ locals {
   }]
 }
 
+data "utils_yaml_merge" "defaults" {
+  input = [file("${path.module}/defaults/defaults.yaml"), yamlencode(local.user_defaults)]
+}
+
+resource "null_resource" "dependencies" {
+  triggers = {
+    dependencies = join(",", var.dependencies)
+  }
+}
+
 module "aci_vlan_pool" {
   source  = "netascode/vlan-pool/aci"
   version = "0.2.2"
@@ -201,6 +212,10 @@ module "aci_vlan_pool" {
     allocation  = try(range.allocation, local.defaults.apic.access_policies.vlan_pools.ranges.allocation)
     role        = try(range.role, local.defaults.apic.access_policies.vlan_pools.ranges.role)
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_physical_domain" {
@@ -213,6 +228,7 @@ module "aci_physical_domain" {
   vlan_pool_allocation = [for k, v in try(local.access_policies.vlan_pools, []) : try(v.allocation, local.defaults.apic.access_policies.vlan_pools.allocation) if v.name == each.value.vlan_pool][0]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_vlan_pool,
   ]
 }
@@ -227,6 +243,7 @@ module "aci_routed_domain" {
   vlan_pool_allocation = [for vp in try(local.access_policies.vlan_pools, []) : try(vp.allocation, local.defaults.apic.access_policies.vlan_pools.allocation) if vp.name == each.value.vlan_pool][0]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_vlan_pool,
   ]
 }
@@ -244,6 +261,7 @@ module "aci_aaep" {
   endpoint_groups    = try(each.value.endpoint_groups, [])
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_physical_domain,
     module.aci_routed_domain,
   ]
@@ -265,6 +283,10 @@ module "aci_mst_policy" {
       to   = try(range.to, range.from)
     }]
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_vpc_policy" {
@@ -274,6 +296,10 @@ module "aci_vpc_policy" {
   for_each           = { for vpc in try(local.access_policies.switch_policies.vpc_policies, []) : vpc.name => vpc if try(local.modules.aci_vpc_policy, true) }
   name               = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.vpc_policies.name_suffix}"
   peer_dead_interval = try(each.value.peer_dead_interval, local.defaults.apic.access_policies.switch_policies.vpc_policies.peer_dead_interval)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_forwarding_scale_policy" {
@@ -283,6 +309,10 @@ module "aci_forwarding_scale_policy" {
   for_each = { for fs in try(local.access_policies.switch_policies.forwarding_scale_policies, []) : fs.name => fs if try(local.modules.aci_forwarding_scale_policy, true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.switch_policies.forwarding_scale_policies.name_suffix}"
   profile  = try(each.value.profile, local.defaults.apic.access_policies.switch_policies.forwarding_scale_policies.profile)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_leaf_switch_policy_group" {
@@ -294,6 +324,7 @@ module "aci_access_leaf_switch_policy_group" {
   forwarding_scale_policy = try("${each.value.forwarding_scale_policy}${local.defaults.apic.access_policies.switch_policies.forwarding_scale_policies.name_suffix}", "")
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_forwarding_scale_policy,
   ]
 }
@@ -307,6 +338,7 @@ module "aci_access_spine_switch_policy_group" {
   lldp_policy = try("${each.value.lldp_policy}${local.defaults.apic.access_policies.interface_policies.lldp_policies.name_suffix}", "")
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_lldp_policy,
   ]
 }
@@ -329,6 +361,7 @@ module "aci_access_leaf_switch_profile_auto" {
   }]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_leaf_interface_profile_manual,
     module.aci_access_leaf_interface_profile_auto,
     module.aci_access_leaf_switch_policy_group,
@@ -353,6 +386,7 @@ module "aci_access_leaf_switch_profile_manual" {
   interface_profiles = [for profile in try(each.value.interface_profiles, []) : "${profile}${local.defaults.apic.access_policies.leaf_interface_profiles.name_suffix}"]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_leaf_interface_profile_manual,
     module.aci_access_leaf_interface_profile_auto,
     module.aci_access_leaf_switch_policy_group,
@@ -377,6 +411,7 @@ module "aci_access_spine_switch_profile_auto" {
   }]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_spine_interface_profile_manual,
     module.aci_access_spine_interface_profile_auto,
   ]
@@ -400,6 +435,7 @@ module "aci_access_spine_switch_profile_manual" {
   interface_profiles = [for profile in try(each.value.interface_profiles, []) : "${profile}${local.defaults.apic.access_policies.spine_interface_profiles.name_suffix}"]
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_spine_interface_profile_manual,
     module.aci_access_spine_interface_profile_auto,
   ]
@@ -412,6 +448,10 @@ module "aci_cdp_policy" {
   for_each    = { for cdp in try(local.access_policies.interface_policies.cdp_policies, []) : cdp.name => cdp if try(local.modules.aci_cdp_policy, true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.cdp_policies.name_suffix}"
   admin_state = each.value.admin_state
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_lldp_policy" {
@@ -422,6 +462,10 @@ module "aci_lldp_policy" {
   name           = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.lldp_policies.name_suffix}"
   admin_rx_state = each.value.admin_rx_state
   admin_tx_state = each.value.admin_tx_state
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_link_level_policy" {
@@ -433,6 +477,10 @@ module "aci_link_level_policy" {
   speed    = try(each.value.speed, local.defaults.apic.access_policies.interface_policies.link_level_policies.speed)
   auto     = try(each.value.auto, local.defaults.apic.access_policies.interface_policies.link_level_policies.auto)
   fec_mode = try(each.value.fec_mode, local.defaults.apic.access_policies.interface_policies.link_level_policies.fec_mode)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_port_channel_policy" {
@@ -450,6 +498,10 @@ module "aci_port_channel_policy" {
   load_defer           = try(each.value.load_defer, local.defaults.apic.access_policies.interface_policies.port_channel_policies.load_defer)
   symmetric_hash       = try(each.value.symmetric_hash, local.defaults.apic.access_policies.interface_policies.port_channel_policies.symmetric_hash)
   hash_key             = try(each.value.hash_key, "")
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_port_channel_member_policy" {
@@ -460,6 +512,10 @@ module "aci_port_channel_member_policy" {
   name     = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.port_channel_member_policies.name_suffix}"
   priority = try(each.value.priority, local.defaults.apic.access_policies.interface_policies.port_channel_member_policies.priority)
   rate     = try(each.value.rate, local.defaults.apic.access_policies.interface_policies.port_channel_member_policies.rate)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_spanning_tree_policy" {
@@ -470,6 +526,10 @@ module "aci_spanning_tree_policy" {
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.name_suffix}"
   bpdu_filter = try(each.value.bpdu_filter, local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.bpdu_filter)
   bpdu_guard  = try(each.value.bpdu_guard, local.defaults.apic.access_policies.interface_policies.spanning_tree_policies.bpdu_guard)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_mcp_policy" {
@@ -479,6 +539,10 @@ module "aci_mcp_policy" {
   for_each    = { for mcp in try(local.access_policies.interface_policies.mcp_policies, []) : mcp.name => mcp if try(local.modules.aci_mcp_policy, true) }
   name        = "${each.value.name}${local.defaults.apic.access_policies.interface_policies.mcp_policies.name_suffix}"
   admin_state = each.value.admin_state
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_l2_policy" {
@@ -490,6 +554,10 @@ module "aci_l2_policy" {
   vlan_scope       = try(each.value.vlan_scope, local.defaults.apic.access_policies.interface_policies.l2_policies.vlan_scope)
   qinq             = try(each.value.qinq, local.defaults.apic.access_policies.interface_policies.l2_policies.qinq)
   reflective_relay = try(each.value.reflective_relay, local.defaults.apic.access_policies.interface_policies.l2_policies.reflective_relay)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_storm_control_policy" {
@@ -513,6 +581,10 @@ module "aci_storm_control_policy" {
   unknown_unicast_burst_rate = try(each.value.unknown_unicast_burst_rate, local.defaults.apic.access_policies.interface_policies.storm_control_policies.unknown_unicast_burst_rate)
   unknown_unicast_pps        = try(each.value.unknown_unicast_pps, local.defaults.apic.access_policies.interface_policies.storm_control_policies.unknown_unicast_pps)
   unknown_unicast_rate       = try(each.value.unknown_unicast_rate, local.defaults.apic.access_policies.interface_policies.storm_control_policies.unknown_unicast_rate)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_leaf_interface_policy_group" {
@@ -536,6 +608,7 @@ module "aci_access_leaf_interface_policy_group" {
   aaep                       = try("${each.value.aaep}${local.defaults.apic.access_policies.aaeps.name_suffix}", "")
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_link_level_policy,
     module.aci_cdp_policy,
     module.aci_lldp_policy,
@@ -560,6 +633,7 @@ module "aci_access_spine_interface_policy_group" {
   aaep              = try("${each.value.aaep}${local.defaults.apic.access_policies.aaeps.name_suffix}", "")
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_link_level_policy,
     module.aci_cdp_policy,
     module.aci_aaep,
@@ -572,6 +646,10 @@ module "aci_access_leaf_interface_profile_auto" {
 
   for_each = { for node in try(local.node_policies.nodes, []) : node.id => node if node.role == "leaf" && (try(local.apic.auto_generate_switch_pod_profiles, local.defaults.apic.auto_generate_switch_pod_profiles) || try(local.apic.auto_generate_access_leaf_switch_interface_profiles, local.defaults.apic.auto_generate_access_leaf_switch_interface_profiles)) && try(local.modules.aci_access_leaf_interface_profile, true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(try(local.access_policies.leaf_interface_profile_name, local.defaults.apic.access_policies.leaf_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_leaf_interface_profile_manual" {
@@ -580,6 +658,10 @@ module "aci_access_leaf_interface_profile_manual" {
 
   for_each = { for prof in try(local.access_policies.leaf_interface_profiles, []) : prof.name => prof if try(local.modules.aci_access_leaf_interface_profile, true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.leaf_interface_profiles.name_suffix}"
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_leaf_interface_selector_manual" {
@@ -597,6 +679,7 @@ module "aci_access_leaf_interface_selector_manual" {
   sub_port_blocks       = each.value.sub_port_blocks
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_leaf_interface_policy_group,
     module.aci_access_leaf_interface_profile_manual,
     module.aci_access_leaf_interface_profile_auto,
@@ -609,6 +692,10 @@ module "aci_access_fex_interface_profile_manual" {
 
   for_each = toset([for fex in try(local.access_policies.fex_interface_profiles, []) : fex.name if try(local.modules.aci_access_fex_interface_profile, true)])
   name     = "${each.value}${local.defaults.apic.access_policies.fex_interface_profiles.name_suffix}"
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_fex_interface_selector_manual" {
@@ -623,6 +710,7 @@ module "aci_access_fex_interface_selector_manual" {
   port_blocks       = each.value.port_blocks
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_leaf_interface_policy_group,
     module.aci_access_fex_interface_profile_manual,
   ]
@@ -634,6 +722,10 @@ module "aci_access_spine_interface_profile_auto" {
 
   for_each = { for node in try(local.node_policies.nodes, []) : node.id => node if node.role == "spine" && (try(local.apic.auto_generate_switch_pod_profiles, local.defaults.apic.auto_generate_switch_pod_profiles) || try(local.apic.auto_generate_access_spine_switch_interface_profiles, local.defaults.apic.auto_generate_access_spine_switch_interface_profiles)) && try(local.modules.aci_access_spine_interface_profile, true) }
   name     = replace("${each.value.id}:${each.value.name}", "/^(?P<id>.+):(?P<name>.+)$/", replace(replace(try(local.access_policies.spine_interface_profile_name, local.defaults.apic.access_policies.spine_interface_profile_name), "\\g<id>", "$id"), "\\g<name>", "$name"))
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_spine_interface_profile_manual" {
@@ -642,6 +734,10 @@ module "aci_access_spine_interface_profile_manual" {
 
   for_each = { for prof in try(local.access_policies.spine_interface_profiles, []) : prof.name => prof if try(local.modules.aci_access_spine_interface_profile, true) }
   name     = "${each.value.name}${local.defaults.apic.access_policies.spine_interface_profiles.name_suffix}"
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_spine_interface_selector_manual" {
@@ -655,6 +751,7 @@ module "aci_access_spine_interface_selector_manual" {
   port_blocks       = each.value.port_blocks
 
   depends_on = [
+    null_resource.dependencies,
     module.aci_access_spine_interface_policy_group,
     module.aci_access_spine_interface_profile_manual,
     module.aci_access_spine_interface_profile_auto,
@@ -674,6 +771,10 @@ module "aci_mcp" {
   disable_port_action = try(local.access_policies.mcp.action, local.defaults.apic.access_policies.mcp.action)
   frequency_sec       = try(local.access_policies.mcp.frequency_sec, local.defaults.apic.access_policies.mcp.frequency_sec)
   frequency_msec      = try(local.access_policies.mcp.frequency_msec, local.defaults.apic.access_policies.mcp.frequency_msec)
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_qos" {
@@ -702,6 +803,10 @@ module "aci_qos" {
       weight               = try(class.weight, [for qclass in local.defaults.apic.access_policies.qos.qos_classes : qclass.weight if qclass.level == class.level][0])
     }
   ]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_span_filter_group" {
@@ -722,6 +827,10 @@ module "aci_access_span_filter_group" {
     destination_from_port = try(entry.destination_from_port, local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port)
     destination_to_port   = try(entry.destination_to_port, entry.destination_from_port, local.defaults.apic.access_policies.span.filter_groups.entries.destination_from_port)
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_span_destination_group" {
@@ -748,6 +857,10 @@ module "aci_access_span_destination_group" {
   tenant              = each.value.tenant
   application_profile = each.value.application_profile
   endpoint_group      = each.value.endpoint_group
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_access_span_source_group" {
@@ -783,6 +896,10 @@ module "aci_access_span_source_group" {
       channel  = ap.channel
     }]
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_vspan_destination_group" {
@@ -805,6 +922,10 @@ module "aci_vspan_destination_group" {
     flow_id             = try(dest.flow_id, local.defaults.apic.access_policies.vspan.destination_groups.destinations.flow_id)
     dscp                = try(dest.dscp, local.defaults.apic.access_policies.vspan.destination_groups.destinations.dscp)
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
 }
 
 module "aci_vspan_session" {
@@ -837,4 +958,16 @@ module "aci_vspan_session" {
       channel  = ap.channel
     }]
   }]
+
+  depends_on = [
+    null_resource.dependencies,
+  ]
+}
+
+resource "null_resource" "critical_resources_done" {
+  triggers = {
+    dependencies = join(",", concat(
+      values(module.aci_access_leaf_switch_profile_auto)[*].dn # provision leaf switch profiles before vPC groups to avoid errors when applying forwarding scale profiles to switches individually
+    ))
+  }
 }
