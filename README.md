@@ -16,7 +16,7 @@ A comprehensive example using this module is available here: https://github.com/
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
 | <a name="requirement_aci"></a> [aci](#requirement\_aci) | >= 2.0.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.2.1 |
-| <a name="requirement_utils"></a> [utils](#requirement\_utils) | >= 0.2.2 |
+| <a name="requirement_utils"></a> [utils](#requirement\_utils) | >= 0.2.4 |
 
 ## Inputs
 
