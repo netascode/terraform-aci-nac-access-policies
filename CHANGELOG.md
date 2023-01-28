@@ -1,3 +1,7 @@
+## 0.4.1 (unreleased)
+
+- Add vlan pools to critical resources to ensure pools are provisioned before being associated to EPGs
+
 ## 0.4.0
 
 - Include default values in module

@@ -967,7 +967,8 @@ module "aci_vspan_session" {
 resource "null_resource" "critical_resources_done" {
   triggers = {
     dependencies = join(",", concat(
-      values(module.aci_access_leaf_switch_profile_auto)[*].dn # provision leaf switch profiles before vPC groups to avoid errors when applying forwarding scale profiles to switches individually
+      values(module.aci_access_leaf_switch_profile_auto)[*].dn, # provision leaf switch profiles before vPC groups to avoid errors when applying forwarding scale profiles to switches individually
+      values(module.aci_vlan_pool)[*].dn,                       # provision vlan pools before associating to EPGs
     ))
   }
 }
