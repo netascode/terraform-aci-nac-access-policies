@@ -1,4 +1,4 @@
-## 0.4.1 (unreleased)
+## 0.4.1
 
 - Add vlan pools to critical resources to ensure pools are provisioned before being associated to EPGs
 
