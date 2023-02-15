@@ -760,7 +760,7 @@ module "aci_access_spine_interface_selector_manual" {
 
 module "aci_mcp" {
   source  = "netascode/mcp/aci"
-  version = "0.1.0"
+  version = "0.1.1"
 
   count               = try(local.modules.aci_mcp, true) == false ? 0 : 1
   admin_state         = try(local.access_policies.mcp.admin_state, local.defaults.apic.access_policies.mcp.admin_state)

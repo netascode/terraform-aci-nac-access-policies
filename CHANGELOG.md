@@ -1,3 +1,7 @@
+## 0.4.2 (unreleased)
+
+- Make the MCP `key` variable sensitive
+
 ## 0.4.1
 
 - Add vlan pools to critical resources to ensure pools are provisioned before being associated to EPGs
